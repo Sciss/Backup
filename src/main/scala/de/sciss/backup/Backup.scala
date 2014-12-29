@@ -36,7 +36,7 @@ object Backup extends SwingApplicationImpl("Backup") {
   val targetDir = volumes / volume / "CDs"
   // val targetDir = userHome / "Documents" / "temp"
 
-  val ejectDVD  = false
+  val ejectDVD  = true
   val dvdDrive  = "cdrom"
   val dvdDir    = file("/media") / dvdDrive //  / "*"
   val shell     = "/bin/bash"
@@ -144,7 +144,7 @@ object Backup extends SwingApplicationImpl("Backup") {
       }
     }
 
-    // NOTE: on Linux must just JDK 7 to offer javaFileListFlavor!
+    // NOTE: on Linux must use JDK 7 to offer javaFileListFlavor!
     lazy val th: TransferHandler = new TransferHandler {
       override def canImport(support: TransferSupport): Boolean =
         support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)
