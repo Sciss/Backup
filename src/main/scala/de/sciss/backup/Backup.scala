@@ -21,19 +21,19 @@ import javax.swing.TransferHandler.TransferSupport
 
 import com.alee.laf.WebLookAndFeel
 import de.sciss.desktop.impl.{SwingApplicationImpl, WindowHandlerImpl, WindowImpl}
-import de.sciss.desktop.{Menu, Window, OptionPane, Desktop, LogPane}
+import de.sciss.desktop.{FileDialog, Menu, Window, OptionPane, Desktop, LogPane}
 import de.sciss.file._
 
 import scala.collection.JavaConversions
 import scala.concurrent.{ExecutionContext, Future, blocking}
-import scala.swing.{Button, BorderPanel, Swing, Label}
+import scala.swing.{FlowPanel, Button, BorderPanel, Swing, Label}
 import Swing._
 import scala.util.{Failure, Success}
 
 object Backup extends SwingApplicationImpl("Backup") {
-  val volume    = "Mnemo2"  // Mnemo1 or Mnemo2
-  val volumes   = if (Desktop.isMac) file("/Volumes") else file("/media") / sys.props("user.name")
-  val targetDir = volumes / volume / "CDs"
+  val initVolume    = "Mnemo1"  // Mnemo1 or Mnemo2
+  val volumes       = if (Desktop.isMac) file("/Volumes") else file("/media") / sys.props("user.name")
+  val initTargetDir = volumes / initVolume / "CDs"
   // val targetDir = userHome / "Documents" / "temp"
 
   val ejectDVD  = true
@@ -57,7 +57,9 @@ object Backup extends SwingApplicationImpl("Backup") {
 
   private val colrFg = Color.white
   private val colrBg = Color.darkGray
-  
+
+  private var targetDir = initTargetDir
+
   override def init(): Unit = {
     WebLookAndFeel.install()
 
@@ -168,9 +170,19 @@ object Backup extends SwingApplicationImpl("Backup") {
     log.foreground  = colrFg
     log.component.focusable = false
 
+    lazy val lbTarget = new Label(targetDir.path)
+    lazy val ggTarget = Button("Change...") {
+      FileDialog.folder(init = Some(targetDir)).show(Some(fr)).foreach { f =>
+        targetDir = f
+        lbTarget.text = f.path
+      }
+    }
+    lazy val pTarget  = new FlowPanel(new Label("Target Directory:"), lbTarget, ggTarget)
+
     lazy val pTop: BorderPanel = new BorderPanel {
-      add(ggSink, BorderPanel.Position.Center)
-      add(ggCD  , BorderPanel.Position.East  )
+      add(pTarget, BorderPanel.Position.North )
+      add(ggSink , BorderPanel.Position.Center)
+      add(ggCD   , BorderPanel.Position.East  )
       foreground = colrFg
       background = colrBg
     }
