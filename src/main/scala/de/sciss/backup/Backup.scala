@@ -60,6 +60,8 @@ object Backup extends SwingApplicationImpl("Backup") {
 
   private var targetDir = initTargetDir
 
+  private var batch = List.empty[File]
+
   override def init(): Unit = {
     WebLookAndFeel.install()
 
@@ -124,10 +126,22 @@ object Backup extends SwingApplicationImpl("Backup") {
 
       ongoing.onComplete {
         case Success(code) if code != 0 =>
-          bail(s"Copy process returned with code $code")
+            onEDT {
+            bail(s"Copy process returned with code $code")
+          }
         case Failure(ex) =>
-          wh.showDialog(Some(fr), ex -> title)
+          onEDT {
+            wh.showDialog(Some(fr), ex -> title)
+          }
         case _ =>
+          onEDT {
+            batch match {
+              case head :: tail =>
+                batch = tail
+                process(source = head, name = head.base, callEject = callEject)
+              case _ =>
+            }
+          }
       }
       true
     }
@@ -139,6 +153,7 @@ object Backup extends SwingApplicationImpl("Backup") {
       os.close()
       if (code == 0) {
         val VolNameExp(name) = os.toString("utf8")
+        batch = Nil
         process(dvdDir.getCanonicalFile, name, callEject = ejectDVD)
       } else {
         val opt = OptionPane.message("No DVD in drive", OptionPane.Message.Error)
@@ -155,8 +170,13 @@ object Backup extends SwingApplicationImpl("Backup") {
         canImport(support) && {
           import JavaConversions._
           val data: List[File] = support.getTransferable.getTransferData(DataFlavor.javaFileListFlavor)
-            .asInstanceOf[java.util.List[File]].toList
-          data.headOption.exists(f => process(f, f.base, callEject = false))
+            .asInstanceOf[java.util.List[File]].toList.sortBy(_.lastModified())
+          data match {
+            case head :: tail =>
+              batch = tail
+              process(head, head.base, callEject = false)
+            case _ => false
+          }
         }
     }
 
