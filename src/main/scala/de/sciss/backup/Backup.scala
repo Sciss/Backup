@@ -2,7 +2,7 @@
  *  Backup.scala
  *  (Backup)
  *
- *  Copyright (c) 2014-2015 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2014-2016 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
@@ -19,7 +19,6 @@ import java.io.{ByteArrayOutputStream, FileOutputStream}
 import javax.swing.TransferHandler
 import javax.swing.TransferHandler.TransferSupport
 
-import com.alee.laf.WebLookAndFeel
 import de.sciss.desktop.impl.{SwingApplicationImpl, WindowHandlerImpl, WindowImpl}
 import de.sciss.desktop.{FileDialog, Menu, Window, OptionPane, Desktop, LogPane}
 import de.sciss.file._
@@ -63,11 +62,11 @@ object Backup extends SwingApplicationImpl("Backup") {
   private var batch = List.empty[File]
 
   override def init(): Unit = {
-    WebLookAndFeel.install()
+    de.sciss.submin.Submin.install(true)
 
-    val initText  = "Drop Volume to Backup"
-    val ggSink    = new Label(initText)
-    val log       = LogPane(rows = 20, columns = 80)
+    val initText    = "Drop Volume to Backup"
+    lazy val ggSink = new Label(initText)
+    val log         = LogPane(rows = 20, columns = 80)
 
     def process(source: File, name: String, callEject: Boolean): Boolean = {
       if (!ongoing.isCompleted) return false
@@ -180,7 +179,11 @@ object Backup extends SwingApplicationImpl("Backup") {
         }
     }
 
+    lazy val dSink = ggSink.preferredSize
     ggSink.border = CompoundBorder(CompoundBorder(EmptyBorder(8), BeveledBorder(Lowered)), EmptyBorder(8))
+    dSink.width  += 36
+    dSink.height += 36
+    ggSink.preferredSize = dSink   // bug in WebLaF
     ggSink.peer.setTransferHandler(th)
     ggSink.foreground = colrFg
     ggSink.background = colrBg

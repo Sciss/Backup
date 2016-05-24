@@ -1,12 +1,14 @@
 # Backup
 
+[![Build Status](https://travis-ci.org/Sciss/Backup.svg?branch=master)](https://travis-ci.org/Sciss/Backup)
+
 ## statement
 
 Backup is a utility that helps me copy directories to my backup hard-drives in a systematic manner. Some properties
 are currently hard-coded, so without making modifications in the source-code, this is probably not useful for
 anyone but myself.
 
-This project is (C)opyright 2014-2015 by Hanns Holger Rutz. All rights reserved. It is released under
+This project is (C)opyright 2014-2016 by Hanns Holger Rutz. All rights reserved. It is released under
 the [GNU General Public License](https://raw.github.com/Sciss/Backup/master/LICENSE) v3+ and comes with absolutely
 no warranties. To contact the author, send an email to `contact at sciss.de`
 
