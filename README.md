@@ -17,3 +17,7 @@ no warranties. To contact the author, send an email to `contact at sciss.de`
 To run, use `sbt run`. Drag-and-drop a folder onto the field in the window's top, or press the "DVD" button to
 make a backup of the inserted DVD (assumes default Linux paths). You will be asked for your password to enable
 use of `sudo` for the backup hard-disk which should be write-protected for normal users.
+
+On Debian, make sure ssh-askpass is installed:
+
+    sudo apt install ssh-askpass
