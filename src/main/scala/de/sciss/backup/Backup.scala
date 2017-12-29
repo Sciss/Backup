@@ -2,7 +2,7 @@
  *  Backup.scala
  *  (Backup)
  *
- *  Copyright (c) 2014-2016 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2014-2018 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
@@ -20,33 +20,32 @@ import javax.swing.TransferHandler
 import javax.swing.TransferHandler.TransferSupport
 
 import de.sciss.desktop.impl.{SwingApplicationImpl, WindowHandlerImpl, WindowImpl}
-import de.sciss.desktop.{FileDialog, Menu, Window, OptionPane, Desktop, LogPane}
+import de.sciss.desktop.{Desktop, FileDialog, LogPane, Menu, OptionPane, Window, WindowHandler}
 import de.sciss.file._
 
-import scala.collection.JavaConversions
 import scala.concurrent.{ExecutionContext, Future, blocking}
-import scala.swing.{FlowPanel, Button, BorderPanel, Swing, Label}
-import Swing._
+import scala.swing.Swing._
+import scala.swing.{BorderPanel, Button, FlowPanel, Label}
+import scala.util.matching.Regex
 import scala.util.{Failure, Success}
 
-object Backup extends SwingApplicationImpl("Backup") {
-  val initVolume    = "Mnemo1"  // Mnemo1 or Mnemo2
-  val volumes       = if (Desktop.isMac) file("/Volumes") else file("/media") / sys.props("user.name")
-  val initTargetDir = volumes / initVolume / "CDs"
-  // val targetDir = userHome / "Documents" / "temp"
+object Backup extends SwingApplicationImpl[Unit]("Backup") {
+  val initVolume   : String   = "Mnemo1"  // Mnemo1 or Mnemo2
+  val volumes      : File     = if (Desktop.isMac) file("/Volumes") else file("/media") / sys.props("user.name")
+  val initTargetDir: File     = volumes / initVolume / "CDs"
 
-  val ejectDVD  = true
-  val dvdDrive  = "cdrom"
-  val dvdDir    = file("/media") / dvdDrive //  / "*"
-  val shell     = "/bin/bash"
-  val askPass   = "/usr/bin/ssh-askpass"
-  val sudo      = "sudo"
-  val cp        = "cp"
-  val touch     = "touch"
-  val chmod     = "chmod"
-  val eject     = "eject"
-  val volName   = "volname"
-  val VolNameExp = "(\\S+)\\s*\\n*".r // somehow 'volname' has trailing spaces and a line feed
+  val ejectDVD     : Boolean  = true
+  val dvdDrive     : String   = "cdrom"
+  val dvdDir       : File     = file("/media") / dvdDrive //  / "*"
+  val shell        : String   = "/bin/bash"
+  val askPass      : String   = "/usr/bin/ssh-askpass"
+  val sudo         : String   = "sudo"
+  val cp           : String   = "cp"
+  val touch        : String   = "touch"
+  val chmod        : String   = "chmod"
+  val eject        : String   = "eject"
+  val volName      : String   = "volname"
+  val VolNameExp   : Regex    = "(\\S+)\\s*\\n*".r // somehow 'volname' has trailing spaces and a line feed
 
   lazy val menuFactory = Menu.Root()
 
@@ -167,9 +166,9 @@ object Backup extends SwingApplicationImpl("Backup") {
 
       override def importData(support: TransferSupport): Boolean =
         canImport(support) && {
-          import JavaConversions._
+          import scala.collection.JavaConverters._
           val data: List[File] = support.getTransferable.getTransferData(DataFlavor.javaFileListFlavor)
-            .asInstanceOf[java.util.List[File]].toList.sortBy(_.lastModified())
+            .asInstanceOf[java.util.List[File]].asScala.toList.sortBy(_.lastModified())
           data match {
             case head :: tail =>
               batch = tail
@@ -211,7 +210,7 @@ object Backup extends SwingApplicationImpl("Backup") {
     }
 
     lazy val fr: Window = new WindowImpl {
-      def handler = wh
+      def handler: WindowHandler = wh
 
       title     = "Backup | Archiving"
       alwaysOnTop = true
